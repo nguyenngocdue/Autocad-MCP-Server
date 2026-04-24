@@ -13,7 +13,7 @@ services:
         value: http
       # URL tới AutoCAD plugin (qua ngrok hoặc cloudflared)
       # Ví dụ: https://abc123.trycloudflare.com
-      - key: AUTOCAD_URL
+      - key: AUTOCAD_HTTP_URL
         sync: false
       # (Tùy chọn) API key bảo mật — đặt giá trị bí mật
       - key: API_KEY
