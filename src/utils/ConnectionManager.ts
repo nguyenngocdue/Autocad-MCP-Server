@@ -1,4 +1,5 @@
 import { AutoCADClientConnection } from "./SocketClient.js";
+import { isHttpMode, sendAutoCADCommandHttp } from "./AutoCADHttpClient.js";
 import * as net from "net";
 
 let connectionMutex: Promise<void> = Promise.resolve();
@@ -41,6 +42,16 @@ async function findAutoCADPort(): Promise<number> {
 export async function withAutoCADConnection<T>(
   operation: (client: AutoCADClientConnection) => Promise<T>
 ): Promise<T> {
+  // HTTP mode — khi AUTOCAD_HTTP_URL được set (dùng Cloudflare Tunnel, ngrok HTTP, hoặc localhost:9180)
+  if (isHttpMode()) {
+    const httpClient = {
+      sendCommand: (method: string, params: any = {}) =>
+        sendAutoCADCommandHttp(method, params),
+    } as any;
+    return operation(httpClient);
+  }
+
+  // TCP mode — kết nối trực tiếp local hoặc ngrok TCP tunnel
   const previousMutex = connectionMutex;
   let releaseMutex!: () => void;
   connectionMutex = new Promise<void>((resolve) => {

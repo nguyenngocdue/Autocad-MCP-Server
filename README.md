@@ -63,8 +63,35 @@ Add the server to your VS Code `.vscode/mcp.json`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AUTOCAD_HOST` | `localhost` | AutoCAD plugin host |
-| `AUTOCAD_PORT` | auto-detect `8180–8199` | AutoCAD plugin port |
+| `AUTOCAD_HOST` | `localhost` | AutoCAD plugin host (TCP mode) |
+| `AUTOCAD_PORT` | auto-detect `8180–8199` | AutoCAD plugin TCP port |
+| `AUTOCAD_HTTP_URL` | _(unset)_ | Khi set, dùng HTTP mode thay TCP. Ví dụ: `http://localhost:9180` hoặc `https://xxxx.trycloudflare.com` |
+
+#### HTTP Mode (Cloudflare Tunnel / ngrok HTTP)
+
+Khi `AUTOCAD_HTTP_URL` được set, server gọi AutoCAD plugin qua HTTP POST thay vì TCP.  
+Hữu ích khi dùng Cloudflare Tunnel hoặc ngrok để expose plugin ra ngoài mà không cần mở TCP port.
+
+```json
+{
+  "servers": {
+    "autocad": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["<absolute-path-to>/build/index.js"],
+      "env": {
+        "AUTOCAD_HTTP_URL": "http://localhost:9180"
+      }
+    }
+  }
+}
+```
+
+Kiểm tra HTTP server đang chạy:
+```bash
+curl http://localhost:9180/
+# → {"status":"running","port":8180,"httpPort":9180}
+```
 
 ---
 
@@ -75,7 +102,8 @@ GitHub Copilot Chat
       │  MCP (stdio)
       ▼
 autocad-mcp-server (Node.js)
-      │  TCP socket (port 8180–8199)
+      │  TCP socket (port 8180–8199)   ← default
+      │  HTTP POST  (port 9180)        ← khi AUTOCAD_HTTP_URL được set
       ▼
 AutoCAD C# Plugin (NETLOAD)
       │
@@ -84,9 +112,10 @@ AutoCAD Document / Database
 ```
 
 1. The MCP server starts as a `stdio` process launched by VS Code.
-2. It discovers the AutoCAD plugin by scanning ports `8180–8199`.
-3. Each tool sends a JSON command over the TCP socket to the C# plugin.
-4. The plugin executes the command inside AutoCAD and returns the result.
+2. **TCP mode (default):** Discovers the AutoCAD plugin by scanning ports `8180–8199`.
+3. **HTTP mode:** Khi `AUTOCAD_HTTP_URL` được set, gọi trực tiếp qua HTTP POST — không cần scan port, hỗ trợ remote tunnel.
+4. Each tool sends a JSON-RPC command to the C# plugin.
+5. The plugin executes the command inside AutoCAD and returns the result.
 
 ---
 
