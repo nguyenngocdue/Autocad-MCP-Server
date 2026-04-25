@@ -1,9 +1,12 @@
 {
 	"servers": {
-		"autocad": {
+		"autocad-stdio": {
 			"type": "stdio",
 			"command": "node",
-			"args": ["E:\\C# Tool Revit\\revit-mcp\\autocad-mcp-server\\build\\index.js"]
+			"args": ["E:\\C# Tool Revit\\revit-mcp\\autocad-mcp-server\\build\\index.js"],
+			"env": {
+				"AUTOCAD_HTTP_URL": "http://localhost:9180"
+			}
 		}
 	},
 	"inputs": []

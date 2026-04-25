@@ -59,43 +59,46 @@ export async function withAutoCADConnection<T>(
   });
   await previousMutex;
 
-  const host = AUTOCAD_HOST_OVERRIDE ?? "localhost";
-  const port = AUTOCAD_PORT_OVERRIDE ?? (await findAutoCADPort());
-  console.error(`[AutoCAD] Connecting to ${host}:${port}`);
-  const client = new AutoCADClientConnection(host, port);
-
   try {
-    if (!client.isConnected) {
-      await new Promise<void>((resolve, reject) => {
-        const onConnect = () => {
-          console.error(`[AutoCAD] TCP connected to ${host}:${port}`);
-          client.socket.removeListener("connect", onConnect);
-          client.socket.removeListener("error", onError);
-          resolve();
-        };
+    const host = AUTOCAD_HOST_OVERRIDE ?? "localhost";
+    const port = AUTOCAD_PORT_OVERRIDE ?? (await findAutoCADPort());
+    console.error(`[AutoCAD] Connecting to ${host}:${port}`);
+    const client = new AutoCADClientConnection(host, port);
 
-        const onError = (error: any) => {
-          client.socket.removeListener("connect", onConnect);
-          client.socket.removeListener("error", onError);
-          reject(new Error(`Failed to connect to AutoCAD plugin: ${error.message}`));
-        };
+    try {
+      if (!client.isConnected) {
+        await new Promise<void>((resolve, reject) => {
+          const onConnect = () => {
+            console.error(`[AutoCAD] TCP connected to ${host}:${port}`);
+            client.socket.removeListener("connect", onConnect);
+            client.socket.removeListener("error", onError);
+            resolve();
+          };
 
-        client.socket.on("connect", onConnect);
-        client.socket.on("error", onError);
-        client.connect();
+          const onError = (error: any) => {
+            client.socket.removeListener("connect", onConnect);
+            client.socket.removeListener("error", onError);
+            reject(new Error(`Failed to connect to AutoCAD plugin: ${error.message}`));
+          };
 
-        setTimeout(() => {
-          client.socket.removeListener("connect", onConnect);
-          client.socket.removeListener("error", onError);
-          reject(new Error("Connection to AutoCAD timed out after 5s"));
-        }, 5000);
-      });
+          client.socket.on("connect", onConnect);
+          client.socket.on("error", onError);
+          client.connect();
+
+          setTimeout(() => {
+            client.socket.removeListener("connect", onConnect);
+            client.socket.removeListener("error", onError);
+            reject(new Error("Connection to AutoCAD timed out after 5s"));
+          }, 5000);
+        });
+      }
+
+      const result = await operation(client);
+      return result;
+    } finally {
+      client.disconnect();
     }
-
-    const result = await operation(client);
-    return result;
   } finally {
-    client.disconnect();
     releaseMutex();
   }
 }
