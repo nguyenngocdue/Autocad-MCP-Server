@@ -115,7 +115,7 @@
           <div class="step-num">2</div>
           <div class="step-body">
             <div class="step-label">Start AutoCAD &amp; load the plugin</div>
-            <div class="step-desc">Open AutoCAD, load the DeepBIM plugin via <strong style="color:#e2e8f0;">NETLOAD</strong>, then run <strong style="color:#e2e8f0;">MCPSTART</strong>. Confirm it is listening on port <strong style="color:#e2e8f0;">8180</strong>.</div>
+            <div class="step-desc">Open AutoCAD, load the DeepBIM plugin via <strong style="color:#e2e8f0;">NETLOAD</strong>, then run <strong style="color:#e2e8f0;">MCPSTART</strong>. For HTTP tunnel mode, confirm <strong style="color:#e2e8f0;">HTTP_PORT=9180</strong>.</div>
           </div>
         </div>
 
@@ -127,8 +127,8 @@
             <div class="step-label">Start the tunnel</div>
             <div class="step-desc">Run in a terminal on the AutoCAD machine:</div>
             <div class="code-block">
-              <code id="tunnelCmd">cloudflared tunnel --url http://localhost:8180</code>
-              <button class="copy-btn" onclick="copyText(this, 'cloudflared tunnel --url http://localhost:8180')">Copy</button>
+              <code id="tunnelCmd">cloudflared tunnel --url http://localhost:9180</code>
+              <button class="copy-btn" onclick="copyText(this, 'cloudflared tunnel --url http://localhost:9180')">Copy</button>
             </div>
           </div>
         </div>
